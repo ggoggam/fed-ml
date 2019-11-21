@@ -36,4 +36,12 @@ def sort_dataset(tr_i, tr_l, tt_i, tt_l):
 
 def generate_shards(tr_i, tr_l, shard_size):
 
-    tr
+    input_shards, label_shards = [], []
+
+    for i in range(tr_i.shape[0]//shard_size):
+        start, end = i*shard_size, (i+1)*shard_size
+
+        input_shards.append(tr_i[start:end])
+        label_shards.append(tr_l[start:end])
+
+    return input_shards, label_shards
