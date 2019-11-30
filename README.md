@@ -4,6 +4,7 @@
  - Reimplementation of Federated Learning Papers
 
 # Google Colab Notebook
- - For demo with GPU support, follow this link: [https://colab.research.google.com/drive/1p98m12ID-czEL2WyJSN1YI2tTExz71H3]
+ - For demo with GPU support, follow these links: 
+ -- [https://colab.research.google.com/drive/1p98m12ID-czEL2WyJSN1YI2tTExz71H3]
  - Provides demo for parameter averaging and Federated Averaging algorithm
  
