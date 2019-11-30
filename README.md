@@ -5,6 +5,6 @@
 
 # Google Colab Notebook
  * For demo with GPU support, follow these links: 
-   - [FedAveraging](https://colab.research.google.com/drive/1p98m12ID-czEL2WyJSN1YI2tTExz71H3)
+   - [Federated Averaging](https://colab.research.google.com/drive/1p98m12ID-czEL2WyJSN1YI2tTExz71H3)
  * Provides demo for parameter averaging and Federated Averaging algorithm
  
