@@ -4,26 +4,26 @@ import numpy as np
 class Model(tf.keras.Model):
 
     """
-    Simple 2-Layer Dense Neural Network for MNIST.
-    
-    Generalized model for client use.
-    This model will be used for control as well: server-side execution
-
-        - Layer 1 : Dense Layer with model.dense_size / ReLU activation
-        - Layer 2 : Dense Layer with model.num_classes / Softmax activation
-
-    Inherits from tf.keras.Model
-
-        - Trainable Variables
-            - model.dense1
-            - model.dense2
+        Simple 2-Layer Dense Neural Network for MNIST.
         
-        - Optimizer
-            - model.optimizer (Default : SGD)
+        Generalized model for client use.
+        This model will be used for control as well: server-side execution
 
-        - Constants
-            - model.batch_size : Initialization input by user (Default : 64)
-            - model.num_classes : Initialization input by user (Default : 10)
+            - Layer 1 : Dense Layer with model.dense_size / ReLU activation
+            - Layer 2 : Dense Layer with model.num_classes / Softmax activation
+
+        Inherits from tf.keras.Model
+
+            - Trainable Variables
+                - model.dense1
+                - model.dense2
+            
+            - Optimizer
+                - model.optimizer (Default : SGD)
+
+            - Constants
+                - model.batch_size : Initialization input by user (Default : 64)
+                - model.num_classes : Initialization input by user (Default : 10)
     """
     
     def __init__(self, num_features, num_classes):
@@ -33,42 +33,40 @@ class Model(tf.keras.Model):
         self.num_classes = num_classes
         
         # Hyperparameters
-        self.optimizer = tf.keras.optimizers.SGD(learning_rate=1e-1)
         self.dense_size = 200
 
         # Layers
-        self.dense1 = tf.keras.layers.Dense(self.dense_size, activation='relu')
-        self.dense2 = tf.keras.layers.Dense(self.num_classes, activation='softmax')
+        self.model = tf.keras.Sequential([
+            tf.keras.layers.Dense(self.dense_size, activation='relu'),
+            tf.keras.layers.Dense(self.num_classes, activation='softmax')
+        ])
+
+        # Optimizer
+        self.optimizer = tf.keras.optimizers.SGD(learning_rate=1e-1)
+
+        # Loss
+        self.loss_function = tf.keras.losses.CategoricalCrossentropy()
 
     def call(self, inputs):
-
-        out = self.dense1(inputs)
-        logits = self.dense2(out)
-
-        return logits
+        return self.model(inputs)
 
     def loss(self, logits, labels):
-
-        labels_one_hot = tf.one_hot(tf.cast(labels, dtype=tf.uint8), self.num_classes)
-        loss = tf.nn.softmax_cross_entropy_with_logits(labels_one_hot, logits)
-
-        return tf.reduce_mean(loss)
+        one_hot = tf.one_hot(labels, self.num_classes)
+        l = self.loss_function(one_hot, logits)
+        return tf.reduce_mean(l)
 
 def train(model, inputs, labels, batch_size, epochs):
     
-    for t in range(epochs):
+    for _ in range(epochs):
 
         for i in range(inputs.shape[0]//batch_size):
-
             start, end = i*batch_size, (i+1)*batch_size
 
             with tf.GradientTape() as tape:
-
-                logits = model.call(inputs[start:end])
-                loss = model.loss(logits, labels[start:end])
+                l = model.loss(model.call(inputs[start:end]), labels[start:end])
             
-            grad = tape.gradient(loss, model.trainable_variables)
-            model.optimizer.apply_gradients(zip(grad, model.trainable_variables))
+            g = tape.gradient(l, model.trainable_variables)
+            model.optimizer.apply_gradients(zip(g, model.trainable_variables))
         
 def test(model, inputs, labels):
 
