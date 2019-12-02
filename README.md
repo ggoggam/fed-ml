@@ -1,4 +1,4 @@
-# APMA-DRP-Project
+# APMA DRP Federated Machine Learning
  * Git Repository for APMA DRP Project - Federated Machine Learning
  * [APMA DRP](http://www.dam.brown.edu/drp/index.html) is Applied Mathematics Directed Reading Program at Brown University (Fall 2019)
  * Reimplementation of Federated Learning Papers
