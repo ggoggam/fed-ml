@@ -7,5 +7,6 @@
  * For demo with GPU support, follow these links: 
    - [Federated Averaging](https://colab.research.google.com/drive/1p98m12ID-czEL2WyJSN1YI2tTExz71H3)
    - [Split Neural Networks](https://colab.research.google.com/drive/1GG5HctuRoaQF1Yp6ko3WrJFtCDoQxT5_)
- * Provides demo for parameter averaging and Federated Averaging algorithm
+ * Demo for parameter averaging and Federated Averaging algorithm
+ * Demo for vanilla configuration SplitNN 
  
