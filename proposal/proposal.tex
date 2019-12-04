@@ -83,7 +83,8 @@
 \begin{document}
 
 	\title{\vspace{-10mm}Federated Machine Learning}
-	\author{}
+	\author{Oh Joon Kwon}
+	\date{November 1, 2019}
 
 	\maketitle
 	
@@ -115,7 +116,7 @@
 	
 	\noindent In the context of machine learning, we would like to minimize our loss of predictions over examples, so we can take $f$ to be a loss function, $f_i(\vec{\theta}) = l(x_i, y_i; \vec{\theta})$ where $l$ is a loss on the prediction made on example $(x_i, y_i)$ with a set of model parameters $\vec{\theta}$. For the multi-party computation scheme with data partitioned over $K$-clients. Let $S_k$ be the set of indices of data points on client $k \in \{1, 2, \dots K \}$ with $n_k := |S_k|$. We can restate the problem to ``the Federated Machine Learning context:
 	
-	$$ \min_{\vec{\theta} \in \mathbb{R}^d} f(\vec{\theta}) = \sum_{k=1}^K \frac{n_k}{n} F_k(\vec{\theta}) \qquad \qquad F_k(\vec{\theta}) := \frac{1}{n_k} \sum_{i \in S_k} f_i(\vec{\theta}) \qquad \qquad n = \sum_{k=1}^K n_k \text{''}$$
+	$$ \min_{\vec{\theta} \in \mathbb{R}^d} f(\vec{\theta}) = \sum_{k=1}^K \frac{n_k}{n} F_k(\vec{\theta}) \qquad \qquad F_k(\vec{\theta}) := \frac{1}{n_k} \sum_{i \in S_k} f_i(\vec{\theta}) \qquad \qquad n = \sum_{k=1}^K n_k$$
 	
 	\vspace{3mm}
 	
@@ -152,7 +153,7 @@
 		\end{enumerate}
     \end{mdframed}
 
-    \noindent Another algorithm is \textbf{Split Neural Nets (SplitNN)}, where a part of training (upto a ``cut layer'') is done locally then the rest is done on the central server. For notation, let $\vec{A}_t^k$ be the forward pass logits of the client side upto the cut layer, $\vec{W}_t$ be the network weights of the server-side networks, and $\vec{H}_t^k$ be the network weights of the client-side networks, which will be combined with $\vec{W}_t$ and updated by each client for use. Here, we will use $l$ for denoting a general loss function to be minimized. The algorithm is claimed to have achieved computation resource and bandwidth efficiency \cite{splitnn}. The vanilla configuration of the algorithm is done in the following way:\cite{nopeek}
+    \noindent Another algorithm is \textbf{Split Neural Nets (SplitNN)}, where a part of training (upto a ``cut layer'') is done locally then the rest is done on the central server. For notation, let $\vec{A}_t$ be the client-side network weights with $\varphi$ as random intializing distribution, $\vec{S}_t$ be the server-side network weights, and $\vec{W}_t$ be all network weights, $[\vec{A}_t, \vec{S}_t]$. Here, we will use $l$ for denoting a general loss function to be minimized. The algorithm is claimed to have achieved computation resource and bandwidth efficiency \cite{splitnn}. The vanilla configuration of the algorithm is done in the following way:\cite{nopeek}
 
 	\begin{mdframed}
 		\textbf{Server Executes} : 
@@ -160,21 +161,21 @@
 			\item \textbf{for }\text{each round $t=1, 2, \dots $} \textbf{do}
 			\item \qquad \textbf{for }\text{each client $k \in C_t$} \textbf{in parallel do}
 			\item \qquad \qquad $\vec{A}_t^k \leftarrow \text{ClientUpdate}(k,t)$
-			\item \qquad \qquad $\vec{W}_t \leftarrow \vec{W}_t - \alpha \cdot \nabla l(\vec{W}_t; \vec{A}_t)$
-			\item \qquad \qquad \text{Send $\nabla l(\vec{A}_t; \vec{W}_t)$ to client $k$ for ClientBackprop$(k,t)$}
+			\item \qquad \qquad $\hat{\vec{Y}}_t^k \leftarrow f(f(b, \vec{A}_t^k), \vec{S}_t^k)$
+			\item \qquad \qquad $\vec{W}_t \leftarrow \vec{W}_t - \alpha \cdot \nabla F_k(\vec{W}_t; \hat{\vec{Y}}_t^k)$
+			\item \qquad \qquad \text{Send $\nabla F_k(\vec{A}_t^k; \hat{\vec{Y}}_t^k)$ to client $k$ for ClientBackprop$(k,t)$}
 		\end{enumerate}
-		\textbf{Each Client Executes ClientUpdate}$(k, \vec{\theta})$:
+		\textbf{Each Client Executes ClientUpdate}$(k, t)$:
 		\begin{enumerate}[\qquad]
-		    \item \text{$\vec{A}_t^k = \varphi$}
-		    \item \textbf{for }\text{each local epoch $i=1, 2, \dots, E$} \textbf{do}
-		    \item \qquad \textbf{for }\text{each batch $b \in \mathcal{B}$} \textbf{do}
-		    \item \qquad \qquad \text{Concatenate $f(b, \vec{H}_t^k)$ to $\vec{A}_t^k$}
-		    \item \text{Return $\vec{A}_t^k$ to server}
+		    \item $\vec{A}_t^k = \varphi$
+		    \item \textbf{for }\text{each batch $b \in \mathcal{B}$} \textbf{do}
+		    \item \qquad \text{Concatenate logits $f(b, \vec{A}_t^k)$ to $\vec{A}_t^k$ (Batch $b$ includes labels)}
+		    \item \text{Return $(f(b, \vec{A}_t^k), \vec{A}_t^k)$ to server}
 		\end{enumerate}
-		\textbf{Each Client Executes ClientBackprop}$(k,t, \nabla F_k(\vec{A}_t; \vec{W}_t))$:
+		\textbf{Each Client Executes ClientBackprop}$(k,t)$:
 		\begin{enumerate}[\qquad]
 		    \item \textbf{for }\text{each batch $b \in \mathcal{B}$} \textbf{do}
-		    \item \qquad $\vec{H}_t^k \leftarrow \vec{H}_t^k - \alpha \cdot \nabla l(\vec{A}_t; \vec{W}_t; b)$
+		    \item \qquad $\vec{A}_t^k \leftarrow \vec{A}_t^k - \alpha \cdot \nabla F_k(\vec{A}_t^k; \hat{\vec{Y}}_t^k)$
 		\end{enumerate}
     \end{mdframed}
 	
