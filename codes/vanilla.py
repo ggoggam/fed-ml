@@ -36,10 +36,19 @@ class Model(tf.keras.Model):
         self.dense_size = 200
 
         # Layers
-        self.model = tf.keras.Sequential([
-            tf.keras.layers.Dense(self.dense_size, activation='relu'),
-            tf.keras.layers.Dense(self.num_classes, activation='softmax')
-        ])
+        if model == 'DENSE':
+            self.model = tf.keras.Sequential([
+                tf.keras.layers.Dense(self.dense_size, activation='relu'),
+                tf.keras.layers.Dense(self.num_classes, activation='softmax')
+            ])
+        if model == 'CNN':
+            self.model = tf.keras.Sequential([
+                tf.keras.layers.Conv2D(32, (3,3), (1,1), padding='valid', activation='relu'),
+                tf.keras.layers.Conv2D(64, (3,3), (1,1), padding='valid', activation='relu'),
+                tf.keras.layers.MaxPool2D((2,2)),
+                tf.keras.layers.Flatten(),
+                tf.keras.layers.Dense(10, activation='softmax')
+            ])
 
         # Optimizer
         self.optimizer = tf.keras.optimizers.SGD(learning_rate=1e-1)
