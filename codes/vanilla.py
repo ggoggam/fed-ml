@@ -34,6 +34,8 @@ class Model(tf.keras.Model):
         
         # Hyperparameters
         self.dense_size = 200
+        
+        model = 'DENSE'
 
         # Layers
         if model == 'DENSE':
